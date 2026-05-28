@@ -1,0 +1,109 @@
+<!-- console.ejs -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Redis Console</h1>
+        <p class="page-subtitle">Send raw RESP commands directly to the server</p>
+    </div>
+    <div class="page-actions">
+        <button class="btn btn-ghost btn-sm" id="clear-console-btn">Clear</button>
+        <button class="btn btn-ghost btn-sm" id="export-console-btn">Export Log</button>
+    </div>
+</div>
+
+<!-- Terminal window -->
+<section class="terminal-window" id="terminal-window" aria-label="Redis command terminal">
+
+    <!-- Terminal title bar -->
+    <div class="terminal-titlebar">
+        <div class="terminal-dots">
+            <span class="dot dot--red"></span>
+            <span class="dot dot--yellow"></span>
+            <span class="dot dot--green"></span>
+        </div>
+        <span class="terminal-title">redis-cli · localhost:7379</span>
+        <div class="terminal-actions">
+            <span class="history-hint">↑↓ history</span>
+        </div>
+    </div>
+
+    <!-- Output area -->
+    <div class="terminal-output" id="terminal-output" role="log" aria-live="polite">
+        <div class="terminal-line terminal-welcome">
+            <span class="t-comment"># RedisKit Console — connected to localhost:7379</span>
+        </div>
+        <div class="terminal-line terminal-welcome">
+            <span class="t-comment"># Type commands like: SET foo bar | GET foo | LPUSH mylist a b c</span>
+        </div>
+        <div class="terminal-line terminal-welcome">
+            <span class="t-comment"># Use ↑ ↓ arrows to navigate command history</span>
+        </div>
+        <div class="terminal-line">&nbsp;</div>
+    </div>
+
+    <!-- Input row -->
+    <div class="terminal-input-row">
+        <span class="terminal-prompt">redis&gt;</span>
+        <input
+            class="terminal-input"
+            type="text"
+            id="terminal-input"
+            placeholder="SET key value"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            aria-label="Redis command input"
+        />
+        <button class="terminal-send-btn" id="terminal-send-btn" aria-label="Send command">
+            <svg viewBox="0 0 24 24" fill="none"><line x1="22" y1="2" x2="11" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polygon points="22 2 15 22 11 13 2 9 22 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+    </div>
+
+    <!-- Autocomplete suggestions -->
+    <div class="autocomplete-panel hidden" id="autocomplete-panel">
+        <ul class="autocomplete-list" id="autocomplete-list" role="listbox"></ul>
+    </div>
+
+</section>
+
+<!-- Command reference -->
+<section class="panel panel--collapsible" id="command-ref-panel" aria-labelledby="cmd-ref-title">
+    <div class="panel-header panel-header--clickable" id="cmd-ref-toggle" role="button" aria-expanded="false" tabindex="0">
+        <h2 class="panel-title" id="cmd-ref-title">Command Reference</h2>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none"><polyline points="6 9 12 15 18 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="panel-body panel-body--collapsed" id="cmd-ref-body">
+        <div class="cmd-ref-grid">
+            <div class="cmd-ref-group">
+                <h3 class="cmd-group-title">Strings</h3>
+                <ul class="cmd-list">
+                    <li><code>SET key value [EX sec]</code></li>
+                    <li><code>GET key</code></li>
+                    <li><code>DEL key</code></li>
+                    <li><code>EXISTS key</code></li>
+                    <li><code>TTL key</code></li>
+                    <li><code>FLUSHALL</code></li>
+                </ul>
+            </div>
+            <div class="cmd-ref-group">
+                <h3 class="cmd-group-title">Lists</h3>
+                <ul class="cmd-list">
+                    <li><code>LPUSH key val [val…]</code></li>
+                    <li><code>RPUSH key val [val…]</code></li>
+                    <li><code>LPOP key</code></li>
+                    <li><code>RPOP key</code></li>
+                    <li><code>LRANGE key start stop</code></li>
+                </ul>
+            </div>
+            <div class="cmd-ref-group">
+                <h3 class="cmd-group-title">Introspection</h3>
+                <ul class="cmd-list">
+                    <li><code>KEYS *</code></li>
+                    <li><code>TYPE key</code></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="/js/console.js"></script>

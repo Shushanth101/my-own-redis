@@ -1,0 +1,207 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   terminal.css  —  Console / terminal emulator styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Terminal window ──────────────────────────────────────────────────────── */
+.terminal-window {
+    background-color: #0d1117;
+    border: 1px solid var(--border-muted);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,.03);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* Title bar */
+.terminal-titlebar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: 10px var(--space-4);
+    background-color: var(--bg-elevated);
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+
+.terminal-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: var(--radius-full);
+}
+
+.dot--red    { background-color: #ff5f57; }
+.dot--yellow { background-color: #ffbd2e; }
+.dot--green  { background-color: #28c941; }
+
+.terminal-title {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    letter-spacing: .3px;
+}
+
+.terminal-actions { min-width: 80px; display: flex; justify-content: flex-end; }
+.history-hint { font-size: 11px; color: var(--text-muted); }
+
+/* Output area */
+.terminal-output {
+    flex: 1;
+    min-height: 380px;
+    max-height: 520px;
+    overflow-y: auto;
+    padding: var(--space-4) var(--space-5);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-primary);
+
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.1) transparent;
+}
+
+.terminal-output::-webkit-scrollbar       { width: 6px; }
+.terminal-output::-webkit-scrollbar-track { background: transparent; }
+.terminal-output::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
+
+/* Terminal lines */
+.terminal-line {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    min-height: 22px;
+    word-break: break-all;
+    animation: lineIn .12s ease;
+}
+
+@keyframes lineIn {
+    from { opacity: 0; transform: translateX(-4px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.terminal-welcome { opacity: .5; }
+
+/* Prompt indicator */
+.t-prompt {
+    color: #3fb950;
+    font-weight: 600;
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* Response types */
+.t-ok      { color: #3fb950; }   /* +OK, success */
+.t-error   { color: #f85149; }   /* -ERR */
+.t-integer { color: #f0883e; }   /* :N */
+.t-bulk    { color: #39c5cf; }   /* $bulk string values */
+.t-null    { color: #484f58; font-style: italic; }
+.t-array   { color: #a5a0f9; }   /* *array header */
+.t-item    { color: #c9d1d9; padding-left: 20px; }  /* array item */
+.t-comment { color: #484f58; }
+.t-cmd     { color: #e3b341; }   /* the command echo */
+
+/* Input row */
+.terminal-input-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-5);
+    border-top: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface);
+    flex-shrink: 0;
+}
+
+.terminal-prompt {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: #3fb950;
+    white-space: nowrap;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.terminal-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--text-primary);
+    caret-color: #3fb950;
+    letter-spacing: .2px;
+}
+
+.terminal-input::placeholder { color: var(--text-muted); }
+
+.terminal-send-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #1f6feb, #388bfd);
+    color: #fff;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.terminal-send-btn:hover { transform: scale(1.08); box-shadow: 0 4px 12px rgba(31,111,235,.4); }
+.terminal-send-btn svg { width: 14px; height: 14px; }
+
+/* ── Autocomplete ─────────────────────────────────────────────────────────── */
+.autocomplete-panel {
+    position: absolute;
+    bottom: calc(100% - 1px);
+    left: 0;
+    right: 0;
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-muted);
+    border-bottom: none;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.autocomplete-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.autocomplete-item {
+    padding: var(--space-2) var(--space-4);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    transition: all var(--transition-fast);
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.highlighted {
+    background-color: rgba(88,166,255,.1);
+    color: var(--text-primary);
+}
+
+.autocomplete-item .cmd-name {
+    font-weight: 600;
+    color: var(--accent-blue);
+}
+
+.autocomplete-item .cmd-args {
+    color: var(--text-muted);
+    font-size: 12px;
+}

@@ -1,0 +1,59 @@
+<!-- keys.ejs -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Key Browser</h1>
+        <p class="page-subtitle">Inspect, search, and manage all stored keys</p>
+    </div>
+    <div class="page-actions">
+        <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <input class="input search-input" type="search" id="key-search" placeholder="Filter keys…" autocomplete="off" />
+        </div>
+        <button class="btn btn-ghost btn-sm" id="refresh-keys-btn">
+            <svg viewBox="0 0 24 24" fill="none" class="btn-icon"><polyline points="1 4 1 10 7 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 15a9 9 0 1 0 .49-4.95" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Filter tabs -->
+<div class="tab-bar" id="type-tabs" role="tablist">
+    <button class="tab active" data-type="all"    role="tab" aria-selected="true">All</button>
+    <button class="tab"        data-type="string" role="tab" aria-selected="false">Strings</button>
+    <button class="tab"        data-type="list"   role="tab" aria-selected="false">Lists</button>
+    <button class="tab"        data-type="expiring" role="tab" aria-selected="false">Expiring</button>
+</div>
+
+<!-- Keys table -->
+<section class="panel panel--full" id="keys-table-panel">
+    <div class="panel-body panel-body--noPad">
+
+        <div class="loading-overlay" id="keys-loading">
+            <div class="spinner"></div>
+            <span>Loading keys…</span>
+        </div>
+
+        <table class="data-table" id="keys-table">
+            <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Type</th>
+                    <th>Value / Preview</th>
+                    <th>TTL</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="keys-tbody">
+                <!-- populated by keys.js -->
+            </tbody>
+        </table>
+
+        <div class="empty-state hidden" id="keys-empty">
+            <svg viewBox="0 0 24 24" fill="none" class="empty-icon"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <p>No keys match your filter</p>
+        </div>
+
+    </div>
+</section>
+
+<script src="/js/keys.js"></script>
