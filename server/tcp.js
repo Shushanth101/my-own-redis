@@ -62,6 +62,55 @@ const server = net.createServer((connection) => {
                     break;
                 }
 
+                case "DEL":{
+                    const key = reply[1];
+                    if(store.has(key)){
+                        store.delete(key);
+                        expiry.delete(key);
+                        connection.write(":1\r\n");
+                        break;
+                    }else{
+                        connection.write(":0\r\n");
+                        break;
+                    }
+                }
+
+                case "EXISTS":{
+                    const key = reply[1];
+                    if(store.has(key)){
+                        connection.write(":1\r\n");
+                        break;
+                    }else{
+                        connection.write(":0\r\n");
+                        break;                        
+                    }
+                }
+
+                case "TTL": {
+                    const key = reply[1];
+
+                    if (!store.has(key)) {
+                        connection.write(":-2\r\n");
+                        break;
+                    }
+
+                    if (!expiry.has(key)) {
+                        connection.write(":-1\r\n");
+                        break;
+                    }
+
+                    if (expiry.get(key) <= Date.now()) {
+                        store.delete(key);
+                        expiry.delete(key);
+                        connection.write(":-2\r\n");
+                        break;
+                    }
+
+                    const remainingTime = Math.ceil((expiry.get(key) - Date.now()) / 1000);
+                    connection.write(`:${remainingTime}\r\n`);
+                    break;
+                }
+
                 default: {
 
                     connection.write(
@@ -93,7 +142,7 @@ const server = net.createServer((connection) => {
 });
 
 
-setTimeout(()=>{
+setInterval(()=>{
     for(const [key,exp] of expiry.entries()){
         if(exp<=Date.now()) {
             expiry.delete(key);
