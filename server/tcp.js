@@ -2,13 +2,12 @@ const net = require("net");
 const Parser = require("redis-parser");
 
 const store = new Map();
-const expiry = new Map()
+const expiry = new Map();
 const lists = new Map();
 
 const server = net.createServer((connection) => {
 
     console.log("Client connected");
-
 
     const parser = new Parser({
 
@@ -22,22 +21,32 @@ const server = net.createServer((connection) => {
 
                     const key = reply[1];
                     const value = reply[2];
-                    let expiration;
-                    for(let i=3;i<reply.length-1;i++){
-                        const option = reply[i].toUpperCase();
-                        const amount = parseInt(reply[i+1],10);
 
-                        if(option==="EX"){
-                            expiration=Date.now()+(amount*1000);
+                    let expiration;
+
+                    for(let i = 3; i < reply.length - 1; i++) {
+
+                        const option = reply[i].toUpperCase();
+                        const amount = parseInt(reply[i + 1], 10);
+
+                        if(option === "EX") {
+                            expiration = Date.now() + (amount * 1000);
                             break;
-                        }else if(option==="PX"){
-                            expiration=Date.now()+amount;
+                        }
+
+                        else if(option === "PX") {
+                            expiration = Date.now() + amount;
                             break;
                         }
                     }
+
                     store.set(key, value);
-                    if(expiration!== undefined) expiry.set(key,expiration);
-                    else expiry.delete(key);
+
+                    if(expiration !== undefined) {
+                        expiry.set(key, expiration);
+                    } else {
+                        expiry.delete(key);
+                    }
 
                     connection.write("+OK\r\n");
 
@@ -45,125 +54,234 @@ const server = net.createServer((connection) => {
                 }
 
                 case "GET": {
+
                     const key = reply[1];
 
-                    if(!store.has(key)){
-                        connection.write("$-1\r\n")
-                        break;
-                    }
-
-                    if(expiry.has(key)&&expiry.get(key)<=Date.now()){
-                        store.delete(key);
-                        expiry.delete(key);
+                    if(!store.has(key)) {
                         connection.write("$-1\r\n");
                         break;
                     }
+
+                    if(
+                        expiry.has(key) &&
+                        expiry.get(key) <= Date.now()
+                    ) {
+
+                        store.delete(key);
+                        expiry.delete(key);
+
+                        connection.write("$-1\r\n");
+
+                        break;
+                    }
+
                     const value = store.get(key);
-                    connection.write(`$${value.length}\r\n${value}\r\n`);
+
+                    connection.write(
+                        `$${value.length}\r\n${value}\r\n`
+                    );
+
                     break;
                 }
 
-                case "DEL":{
+                case "DEL": {
+
                     const key = reply[1];
-                    if(store.has(key)){
+
+                    if(store.has(key)) {
+
                         store.delete(key);
                         expiry.delete(key);
+
                         connection.write(":1\r\n");
-                        break;
-                    }else{
+
+                    } else {
+
                         connection.write(":0\r\n");
-                        break;
                     }
+
+                    break;
                 }
 
-                case "EXISTS":{
+                case "EXISTS": {
+
                     const key = reply[1];
-                    if(store.has(key)){
+
+                    if(store.has(key)) {
                         connection.write(":1\r\n");
-                        break;
-                    }else{
+                    } else {
                         connection.write(":0\r\n");
-                        break;                        
                     }
+
+                    break;
                 }
 
                 case "TTL": {
+
                     const key = reply[1];
 
-                    if (!store.has(key)) {
+                    if(!store.has(key)) {
                         connection.write(":-2\r\n");
                         break;
                     }
 
-                    if (!expiry.has(key)) {
+                    if(!expiry.has(key)) {
                         connection.write(":-1\r\n");
                         break;
                     }
 
-                    if (expiry.get(key) <= Date.now()) {
+                    if(expiry.get(key) <= Date.now()) {
+
                         store.delete(key);
                         expiry.delete(key);
+
                         connection.write(":-2\r\n");
+
                         break;
                     }
 
-                    const remainingTime = Math.ceil((expiry.get(key) - Date.now()) / 1000);
+                    const remainingTime =
+                        Math.ceil(
+                            (expiry.get(key) - Date.now()) / 1000
+                        );
+
                     connection.write(`:${remainingTime}\r\n`);
+
                     break;
                 }
-                case "FLUSHALL":{
+
+                case "FLUSHALL": {
+
                     store.clear();
                     expiry.clear();
+                    lists.clear();
+
                     connection.write("+OK\r\n");
+
+                    break;
                 }
 
-                case "LPUSH":{
+                case "LPUSH": {
+
                     const key = reply[1];
-                    const list = lists.get(key)??[];
-                    for(let i=2;i<reply.length;i++){
+
+                    const list = lists.get(key) ?? [];
+
+                    for(let i = 2; i < reply.length; i++) {
                         list.unshift(reply[i]);
                     }
-                    lists.set(key,list);
+
+                    lists.set(key, list);
+
                     connection.write(`:${list.length}\r\n`);
+
                     break;
                 }
-                case"LPOP":{
+
+                case "LPOP": {
+
                     const key = reply[1];
+
                     const list = lists.get(key);
-                    if(list){
-                        const removedEle = list.shift();
-                        connection.write(`$${removedEle.length}\r\n${removedEle}\r\n`);
+
+                    if(!list || list.length === 0) {
+                        connection.write("$-1\r\n");
                         break;
                     }
-                    else{
-                        connection.write("$-1\r\n")
-                        break;
-                    }
+
+                    const removedEle = list.shift();
+
+                    connection.write(
+                        `$${removedEle.length}\r\n${removedEle}\r\n`
+                    );
+
+                    break;
                 }
 
-                case "RPUSH":{
+                case "RPUSH": {
+
                     const key = reply[1];
-                    const list = lists.get(key)??[];
-                    for(let i=2;i<reply.length;i++){
+
+                    const list = lists.get(key) ?? [];
+
+                    for(let i = 2; i < reply.length; i++) {
                         list.push(reply[i]);
                     }
-                    lists.set(key,list);
-                    connection.write(`:${list.length}\r\n`);
-                    break;
 
+                    lists.set(key, list);
+
+                    connection.write(`:${list.length}\r\n`);
+
+                    break;
                 }
-                case"RPOP":{
+
+                case "RPOP": {
+
                     const key = reply[1];
+
                     const list = lists.get(key);
-                    if(list){
-                        const removedEle = list.pop();
-                        connection.write(`$${removedEle.length}\r\n${removedEle}\r\n`);
+
+                    if(!list || list.length === 0) {
+                        connection.write("$-1\r\n");
                         break;
                     }
-                    else{
-                        connection.write("$-1\r\n")
+
+                    const removedEle = list.pop();
+
+                    connection.write(
+                        `$${removedEle.length}\r\n${removedEle}\r\n`
+                    );
+
+                    break;
+                }
+
+                case "LRANGE": {
+
+                    const key = reply[1];
+
+                    let start = parseInt(reply[2], 10);
+                    let stop = parseInt(reply[3], 10);
+
+                    const list = lists.get(key);
+
+                    if(!list) {
+                        connection.write("*0\r\n");
                         break;
                     }
+
+                    const length = list.length;
+
+                    if(start < 0) {
+                        start = length + start;
+                    }
+
+                    if(stop < 0) {
+                        stop = length + stop;
+                    }
+
+                    start = Math.max(0, start);
+                    stop = Math.min(length - 1, stop);
+
+                    if(start > stop || start >= length) {
+                        connection.write("*0\r\n");
+                        break;
+                    }
+
+                    const result =
+                        list.slice(start, stop + 1);
+
+                    let response =
+                        `*${result.length}\r\n`;
+
+                    for(const item of result) {
+
+                        response +=
+                            `$${item.length}\r\n${item}\r\n`;
+                    }
+
+                    connection.write(response);
+
+                    break;
                 }
 
                 default: {
@@ -176,6 +294,7 @@ const server = net.createServer((connection) => {
         },
 
         returnError: (err) => {
+
             connection.write(
                 `-ERR ${err.message}\r\n`
             );
@@ -196,15 +315,18 @@ const server = net.createServer((connection) => {
 
 });
 
+setInterval(() => {
 
-setInterval(()=>{
-    for(const [key,exp] of expiry.entries()){
-        if(exp<=Date.now()) {
+    for(const [key, exp] of expiry.entries()) {
+
+        if(exp <= Date.now()) {
+
             expiry.delete(key);
             store.delete(key);
         }
     }
-},1000)
+
+}, 1000);
 
 server.listen(7379, () => {
     console.log("Redis clone running on port 7379");
