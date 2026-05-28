@@ -21,10 +21,22 @@ const server = net.createServer((connection) => {
 
                     const key = reply[1];
                     const value = reply[2];
-                    const expiration = reply[3]?Date.now()+reply[3]:undefined;
+                    let expiration;
+                    for(let i=3;i<reply.length-1;i++){
+                        const option = reply[i].toUpperCase();
+                        const amount = parseInt(reply[i+1],10);
 
+                        if(option==="EX"){
+                            expiration=Date.now()+(amount*1000);
+                            break;
+                        }else if(option==="PX"){
+                            expiration=Date.now()+amount;
+                            break;
+                        }
+                    }
                     store.set(key, value);
-                    if(expiration) expiry.set(key,expiration);
+                    if(expiration!== undefined) expiry.set(key,expiration);
+                    else expiry.delete(key);
 
                     connection.write("+OK\r\n");
 
@@ -47,6 +59,7 @@ const server = net.createServer((connection) => {
                     }
                     const value = store.get(key);
                     connection.write(`$${value.length}\r\n${value}\r\n`);
+                    break;
                 }
 
                 default: {
