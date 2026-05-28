@@ -92,6 +92,16 @@ const server = net.createServer((connection) => {
 
 });
 
+
+setTimeout(()=>{
+    for(const [key,exp] of expiry.entries()){
+        if(exp<=Date.now()) {
+            expiry.delete(key);
+            store.delete(key);
+        }
+    }
+},1000)
+
 server.listen(7379, () => {
     console.log("Redis clone running on port 7379");
 });
