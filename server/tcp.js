@@ -3,6 +3,7 @@ const Parser = require("redis-parser");
 
 const store = new Map();
 const expiry = new Map()
+const lists = new Map();
 
 const server = net.createServer((connection) => {
 
@@ -109,6 +110,60 @@ const server = net.createServer((connection) => {
                     const remainingTime = Math.ceil((expiry.get(key) - Date.now()) / 1000);
                     connection.write(`:${remainingTime}\r\n`);
                     break;
+                }
+                case "FLUSHALL":{
+                    store.clear();
+                    expiry.clear();
+                    connection.write("+OK\r\n");
+                }
+
+                case "LPUSH":{
+                    const key = reply[1];
+                    const list = lists.get(key)??[];
+                    for(let i=2;i<reply.length;i++){
+                        list.unshift(reply[i]);
+                    }
+                    lists.set(key,list);
+                    connection.write(`:${list.length}\r\n`);
+                    break;
+                }
+                case"LPOP":{
+                    const key = reply[1];
+                    const list = lists.get(key);
+                    if(list){
+                        const removedEle = list.shift();
+                        connection.write(`$${removedEle.length}\r\n${removedEle}\r\n`);
+                        break;
+                    }
+                    else{
+                        connection.write("$-1\r\n")
+                        break;
+                    }
+                }
+
+                case "RPUSH":{
+                    const key = reply[1];
+                    const list = lists.get(key)??[];
+                    for(let i=2;i<reply.length;i++){
+                        list.push(reply[i]);
+                    }
+                    lists.set(key,list);
+                    connection.write(`:${list.length}\r\n`);
+                    break;
+
+                }
+                case"RPOP":{
+                    const key = reply[1];
+                    const list = lists.get(key);
+                    if(list){
+                        const removedEle = list.pop();
+                        connection.write(`$${removedEle.length}\r\n${removedEle}\r\n`);
+                        break;
+                    }
+                    else{
+                        connection.write("$-1\r\n")
+                        break;
+                    }
                 }
 
                 default: {
